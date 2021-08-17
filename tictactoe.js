@@ -93,7 +93,7 @@ var gameController = (function() {
         while (true) {
             console.log(`${_currentTurnPlayer.name}'s turn.`);
 
-            let move = _players[_currentTurnPlayer].makeMove();
+            let move = _currentTurnPlayer.makeMove();
             if (!gameboard.executeMove(move, _currentTurnPlayer)) {
                 console.log("That spot is already taken.");
             } else {
