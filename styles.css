@@ -83,6 +83,23 @@ h1 {
     transition: transform .3s;
 }
 
+svg {
+    position: absolute;
+    pointer-events:none;
+
+    width: inherit;
+    height: inherit;
+}
+
+
+#winLine {
+    pointer-events:none;
+    fill: none;
+    stroke: rgb(255, 0, 0);
+    opacity: 0%;
+    transition: opacity 1s;
+    stroke-width:3
+}
 
 .noselect {
     -webkit-touch-callout: none; /* iOS Safari */
@@ -92,4 +109,4 @@ h1 {
           -ms-user-select: none; /* Internet Explorer/Edge */
               user-select: none; /* Non-prefixed version, currently
                                     supported by Chrome, Edge, Opera and Firefox */
-  }
+}

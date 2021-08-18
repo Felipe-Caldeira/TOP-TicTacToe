@@ -21,23 +21,46 @@ var gameboard = (function() {
     ];
 
     var _cells = document.querySelectorAll(".cell");
+    
+    var _winLine = document.getElementById("winLine"); 
 
+
+    function _cellCoords(cell, canvasSize, cellSize) {
+        return {
+            x: ((cellSize / 2) + (cellSize * cell)) % canvasSize,
+            y: (cell > 5) ? cellSize * (5 / 2) :
+                (cell > 2) ? cellSize * (3 / 2) :
+                (cellSize / 2)
+        }
+    }
+
+    function _drawWinLine(cell1, cell2) {
+        let boardSize = document.querySelector(".gameboard").offsetWidth;
+        let cellSize = boardSize / 3;
+
+        cell1 = _cellCoords(cell1, boardSize, cellSize);
+        cell2 = _cellCoords(cell2, boardSize, cellSize);
+
+        _winLine.setAttribute("points", `${cell1.x},${cell1.y} ${cell2.x},${cell2.y}`);
+        _winLine.style.opacity = "100%";
+    }
 
     function checkWinCondition() {
         // Check all of winning indeces
         for (const line of _winningIndeces) {
             if (_gbArray[line[0]] && _gbArray[line[0]] === _gbArray[line[1]] && _gbArray[line[0]] === _gbArray[line[2]]) {
                 _cells.forEach(cell => cell.classList.add("taken"));
-                return {end: true, winner: _gbArray[line[0]]}; // Return the player who won
+                _drawWinLine(line[0], line[2]);
+                return { end: true, winner: _gbArray[line[0]] }; // Return the player who won
             }
         }
 
         // Check if it's a tie
         if (_freeSpaces === 0) {
-            return {end: true, winner: "tie"};
+            return { end: true, winner: "tie" };
         }
 
-        return {end: false, winner: undefined};
+        return { end: false, winner: undefined };
     }
 
     function initializeBoard() {
@@ -55,7 +78,12 @@ var gameboard = (function() {
 
         _freeSpaces = 9;
 
+        // Clear win line
+        _winLine.setAttribute("points", "");
+        _winLine.style.opacity = "0%";
+
         renderBoard();
+
     }
 
     function executeMove(cell, player) {
@@ -102,7 +130,7 @@ var gameController = (function() {
     var _player1, _player2;
     var _currentTurnPlayer;
     var _gameWon = false;
-    
+
 
     function changeTurn() {
         if (_player1 === _currentTurnPlayer) {
@@ -111,7 +139,7 @@ var gameController = (function() {
             _currentTurnPlayer = _player1;
         }
     }
-    
+
     function getCurrentTurnPlayer() {
         return _currentTurnPlayer;
     }
