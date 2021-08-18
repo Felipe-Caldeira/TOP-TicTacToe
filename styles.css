@@ -1,0 +1,95 @@
+html {
+    font-size: 8px;
+    font-family: 'Roboto Mono', monospace;
+    color: #594a4e;
+    background-color: #bef5ff;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+}
+
+body {
+    margin: 0;
+}
+
+h1 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    width: 100%;
+    height: 6rem;
+
+    text-align: center;
+    font-size: 5rem;
+    padding: 2rem;
+    margin: 0;
+}
+
+.mainContainer {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gameboard {
+    display: grid;
+    grid: 1fr 1fr 1fr / 1fr 1fr 1fr;
+    
+    width: 60rem;
+    height: 60rem;
+}
+
+.cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(248, 183, 210);
+    border: .75rem solid #bef5ff;
+
+    transition: transform .3s;
+
+    font-size: 15rem;
+}
+
+.cell:not(.taken):hover {
+    background-color: rgb(224, 154, 183);
+}
+
+.cell:not(.taken):active {
+    transform: scale(.95);
+    transition: transform .3s;
+}
+
+.resetButton {
+    background-color: aquamarine;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+    width: 15rem;
+    padding: 2rem;
+    margin-top: 2rem;
+    transition: transform .3s;
+}
+
+.resetButton:hover {
+    background-color: rgb(109, 221, 184);
+}
+
+.resetButton:active {
+    transform: scale(.95);
+    transition: transform .3s;
+}
+
+
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+       -khtml-user-select: none; /* Konqueror HTML */
+         -moz-user-select: none; /* Old versions of Firefox */
+          -ms-user-select: none; /* Internet Explorer/Edge */
+              user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome, Edge, Opera and Firefox */
+  }
