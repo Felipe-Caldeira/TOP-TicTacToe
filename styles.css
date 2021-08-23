@@ -74,6 +74,7 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
+    text-align: center;
     font-size: 2.5rem;
     width: 15rem;
     padding: 2rem;
