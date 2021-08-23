@@ -12,22 +12,29 @@
 
 <body>
     <h1>Tic Tac Toe!</h1>
+    <div class="mainMenu">
+        <div id = "startSingle" class="button noselect">One Player</div>
+        <div id = "startVS" class="button noselect">Two Player</div>
+    </div>
     <div class="mainContainer">
+        <div class="gameText">Game Text</div>
         <div class="gameboard">
             <svg>
                 <polyline id="winLine" points=""/>   
             </svg>
-            <div class="cell noselect" data-idx="0" data-symbol="X"></div>
-            <div class="cell noselect" data-idx="1" data-symbol="X"></div>
-            <div class="cell noselect" data-idx="2" data-symbol="X"></div>
-            <div class="cell noselect" data-idx="3" data-symbol="X"></div>
-            <div class="cell noselect" data-idx="4" data-symbol="X"></div>
-            <div class="cell noselect" data-idx="5" data-symbol="X"></div>
-            <div class="cell noselect" data-idx="6" data-symbol="X"></div>
-            <div class="cell noselect" data-idx="7" data-symbol="X"></div>
-            <div class="cell noselect" data-idx="8" data-symbol="X"></div>
+            <div class="cell noselect" data-idx="0"></div>
+            <div class="cell noselect" data-idx="1"></div>
+            <div class="cell noselect" data-idx="2"></div>
+            <div class="cell noselect" data-idx="3"></div>
+            <div class="cell noselect" data-idx="4"></div>
+            <div class="cell noselect" data-idx="5"></div>
+            <div class="cell noselect" data-idx="6"></div>
+            <div class="cell noselect" data-idx="7"></div>
+            <div class="cell noselect" data-idx="8"></div>
+
         </div>
-        <div class="resetButton noselect">Reset Game</div>
+        <div id="resetButton" class="button noselect">Reset Game</div>
+        <div id="menuButton" class="button noselect">Main Menu</div>
     </div>
 
     <script src="tictactoe.js"></script>

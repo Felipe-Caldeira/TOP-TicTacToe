@@ -119,18 +119,37 @@ var gameboard = (function() {
 function playerFactory(name, symbol) {
     var name = name;
     var symbol = symbol;
+    var isCPU = false;
 
-    return { name, symbol }
+    function makeCPUMove() {
+        // Logic for CPU's turn
+    }
+    
+    return { name, symbol, isCPU, makeCPUMove }
 }
 
 // GameController module
 var gameController = (function() {
     'use strict';
-
+    
     var _player1, _player2;
     var _currentTurnPlayer;
     var _gameWon = false;
-
+    var _mainContainer = document.querySelector(".mainContainer");
+    var _mainMenu = document.querySelector(".mainMenu");
+    var _gameText = document.querySelector(".gameText");
+    
+    function toggleMainMenu() {
+        let style = window.getComputedStyle(_mainMenu);
+        if (style.getPropertyValue("display") === "flex") {
+            _mainContainer.style.display = "flex";
+            _mainMenu.style.display = "none";
+        } else {
+            _mainContainer.style.display = "none";
+            _mainMenu.style.display = "flex";
+            resetGame();
+        }
+    }
 
     function changeTurn() {
         if (_player1 === _currentTurnPlayer) {
@@ -138,6 +157,13 @@ var gameController = (function() {
         } else {
             _currentTurnPlayer = _player1;
         }
+        if (_currentTurnPlayer.isCPU) {
+            _currentTurnPlayer.makeCPUMove();
+        }
+    }
+
+    function gameText(str) {
+        _gameText.innerHTML = str;
     }
 
     function getCurrentTurnPlayer() {
@@ -148,13 +174,22 @@ var gameController = (function() {
         return _gameWon;
     }
 
-    function startGame() {
-        // Determine the players
-        _player1 = playerFactory(prompt("Player 1 name:"), "X");
-        _player2 = playerFactory(prompt("Player 2 name:"), "O");
+    function startGame(mode) {
+        if (mode === "single") {
+            _player1 = playerFactory(prompt("Player name:"), "X");
+            _player2 = playerFactory("Computer", "O");
+            _player2.isCPU = true;
+        } else {
+            _player1 = playerFactory(prompt("Player 1 name:"), "X");
+            _player2 = playerFactory(prompt("Player 2 name:"), "O");
+        }
+        if (_player1.name === "") { _player1.name = "Player 1"; }
+        if (_player2.name === "") { _player2.name = "Player 2"; }
 
         _currentTurnPlayer = _player1;
+        toggleMainMenu()
         gameboard.initializeBoard();
+        updateGame();
     }
 
     function updateGame() {
@@ -164,11 +199,13 @@ var gameController = (function() {
         let potentialWinner = gameboard.checkWinCondition();
         if (potentialWinner.end) {
             if (potentialWinner.winner !== "tie") {
-                console.log(`${potentialWinner.winner.name} won!`);
+                gameText(`${potentialWinner.winner.name} won!`);
             } else {
-                console.log("It's a cat's game!");
+                gameText("It's a cat's game!");
             }
             _gameWon = true;
+        } else {
+            gameText(`It's ${_currentTurnPlayer.name}'s turn.`);
         }
     }
 
@@ -176,18 +213,22 @@ var gameController = (function() {
         // Called when a reset button is called. 
         _gameWon = false;
         gameboard.resetBoard();
+        updateGame();
     }
 
+    
 
-    return { startGame, updateGame, resetGame, getCurrentTurnPlayer, getGameWon, changeTurn }
+
+    return { startGame, updateGame, resetGame, getCurrentTurnPlayer, getGameWon, changeTurn, toggleMainMenu }
 })()
 
 
 
 function start() {
-    gameController.startGame();
-
-    document.querySelector(".resetButton").addEventListener("click", gameController.resetGame);
+    document.getElementById("startSingle").addEventListener("click", () => { gameController.startGame("single"); });
+    document.getElementById("startVS").addEventListener("click", () => { gameController.startGame("vs"); });
+    document.getElementById("resetButton").addEventListener("click", gameController.resetGame);
+    document.getElementById("menuButton").addEventListener("click", gameController.toggleMainMenu);
 }
 
 window.onload = start;
