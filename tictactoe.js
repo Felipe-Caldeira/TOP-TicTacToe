@@ -1,16 +1,32 @@
+// Player factory function
+function playerFactory(name, symbol) {
+    var name = name;
+    var symbol = symbol;
+    var isCPU = false;
+
+    function makeCPUMove() {
+        // Logic for CPU's turn
+        let move = cpuAI.makeMove(gameboard.getStateForAI());
+        setTimeout(() => {gameboard.executeMove(document.querySelector(`.cell[data-idx='${move}']`), this);}, 1000);
+    }
+    
+    return { name, symbol, isCPU, makeCPUMove }
+}
+
 // Gameboard module
 var gameboard = (function() {
     'use strict';
 
     var _gbArray = [0, 0, 0,
-        0, 0, 0,
-        0, 0, 0
+                    0, 0, 0,
+                    0, 0, 0
     ];
-
     var _freeSpaces = 9;
-
-    var _winningIndeces = [
-        [0, 1, 2],
+    var _cells = document.querySelectorAll(".cell");
+    var _winLine = document.getElementById("winLine"); 
+    
+    var winningIndeces = [
+    [0, 1, 2],
         [3, 4, 5],
         [6, 7, 8],
         [0, 3, 6],
@@ -19,12 +35,7 @@ var gameboard = (function() {
         [0, 4, 8],
         [2, 4, 6]
     ];
-
-    var _cells = document.querySelectorAll(".cell");
     
-    var _winLine = document.getElementById("winLine"); 
-
-
     function _cellCoords(cell, canvasSize, cellSize) {
         return {
             x: ((cellSize / 2) + (cellSize * cell)) % canvasSize,
@@ -45,9 +56,23 @@ var gameboard = (function() {
         _winLine.style.opacity = "100%";
     }
 
+    function getStateForAI() {
+        let stateRep = [];
+        for (const cell of _gbArray) {
+            if (cell === 0) {
+                stateRep.push(0);
+            } else if (cell.name == "Computer") {
+                stateRep.push(1);
+            } else {
+                stateRep.push(-1);
+            }
+        }
+        return stateRep;
+    }
+
     function checkWinCondition() {
         // Check all of winning indeces
-        for (const line of _winningIndeces) {
+        for (const line of winningIndeces) {
             if (_gbArray[line[0]] && _gbArray[line[0]] === _gbArray[line[1]] && _gbArray[line[0]] === _gbArray[line[2]]) {
                 _cells.forEach(cell => cell.classList.add("taken"));
                 _drawWinLine(line[0], line[2]);
@@ -83,25 +108,20 @@ var gameboard = (function() {
         _winLine.style.opacity = "0%";
 
         renderBoard();
-
     }
 
     function executeMove(cell, player) {
         if (player === undefined || gameController.getGameWon()) { return; }
 
-        console.log(player.name + " just made a play.");
-
+        
         let idx = cell.dataset.idx - 0;
         if (!_gbArray[idx]) {
+            console.log(player.name + " just made a play.");
             _gbArray[idx] = player;
             _freeSpaces -= 1;
             cell.classList.add("taken");
             gameController.changeTurn();
-        } else {
-            console.log("Taken!");
-        }
-
-        gameController.updateGame();
+        } 
     }
 
     function renderBoard() {
@@ -111,22 +131,8 @@ var gameboard = (function() {
         });
     }
 
-    return { resetBoard, executeMove, checkWinCondition, initializeBoard, renderBoard }
-})()
-
-
-// Player factory function
-function playerFactory(name, symbol) {
-    var name = name;
-    var symbol = symbol;
-    var isCPU = false;
-
-    function makeCPUMove() {
-        // Logic for CPU's turn
-    }
-    
-    return { name, symbol, isCPU, makeCPUMove }
-}
+    return { winningIndeces, resetBoard, executeMove, checkWinCondition, initializeBoard, renderBoard, getStateForAI }
+})();
 
 // GameController module
 var gameController = (function() {
@@ -157,6 +163,7 @@ var gameController = (function() {
         } else {
             _currentTurnPlayer = _player1;
         }
+        updateGame();
         if (_currentTurnPlayer.isCPU) {
             _currentTurnPlayer.makeCPUMove();
         }
@@ -213,15 +220,66 @@ var gameController = (function() {
         // Called when a reset button is called. 
         _gameWon = false;
         gameboard.resetBoard();
+        if (_currentTurnPlayer.isCPU) {_currentTurnPlayer.makeCPUMove();}
         updateGame();
     }
 
-    
-
-
     return { startGame, updateGame, resetGame, getCurrentTurnPlayer, getGameWon, changeTurn, toggleMainMenu }
-})()
+})();
 
+// AI Module
+var cpuAI = (function() {
+    var AI = minimaxAI(_stateFacFn, _genChildrenFn, _gameoverFn, _nextMoveFn);
+
+    function _stateFacFn(rawState) {
+        return {
+            rep: rawState,
+            requiredMove: undefined,
+            maxPlayer: true
+        }
+    }
+
+    function _genChildrenFn(state) {
+        let children = [];
+        for (let idx = 0; idx < state.rep.length; idx++) {
+            if (state.rep[idx] === 0) {
+                let newRep = [...state.rep];
+                newRep[idx] = state.maxPlayer ? 1 : -1;
+                children.push({
+                    rep: newRep,
+                    requiredMove: idx,
+                    maxPlayer: !state.maxPlayer
+                })      
+            }
+        }
+        return children;
+    }
+
+    function _gameoverFn(state) {
+        // Win for cpu is 1, win for player is -1, tie is 0. No game over is false.
+        for (const line of gameboard.winningIndeces) {
+            if (state.rep[line[0]] && state.rep[line[0]] === state.rep[line[1]] && state.rep[line[0]] === state.rep[line[2]]) {
+                return state.rep[line[0]]; // Return the player who won
+            }
+        }
+        let emptyCellCount = state.rep.reduce((n, x) => n + (x === 0), 0);
+        return (emptyCellCount === 0) ? 0 : false;
+    }
+
+    function _nextMoveFn(optimalNextState) {
+        return optimalNextState.requiredMove;
+    }
+
+    function makeMove(rawState) {
+        return AI.makeMove(rawState);
+    }
+    
+    function showTree(rawState) {
+        return AI.showTree(rawState);
+    }
+
+    return { makeMove, showTree }
+})();
 
 
 function start() {
