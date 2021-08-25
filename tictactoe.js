@@ -6,7 +6,14 @@ function playerFactory(name, symbol) {
 
     function makeCPUMove() {
         // Logic for CPU's turn
-        let move = cpuAI.makeMove(gameboard.getStateForAI());
+        let optimalMove = cpuAI.makeMove(gameboard.getStateForAI());
+        let currState = gameboard.getStateForAI();
+        let possibleMoves = [];
+        for (let i = 0; i < currState.length; i++) {
+            if (currState[i] === 0) { possibleMoves.push(i); }
+        }
+        let CPU_difficulty = (possibleMoves.length >= 8) ? .66 : (possibleMoves.length >= 6) ? .90 : 1;
+        let move = (Math.random() > CPU_difficulty) ? possibleMoves[Math.floor(Math.random()*possibleMoves.length)] : optimalMove;
         setTimeout(() => {gameboard.executeMove(document.querySelector(`.cell[data-idx='${move}']`), this);}, 1000);
     }
     
@@ -90,7 +97,11 @@ var gameboard = (function() {
 
     function initializeBoard() {
         resetBoard();
-        _cells.forEach(cell => cell.addEventListener("click", (e) => executeMove(e.currentTarget, gameController.getCurrentTurnPlayer())));
+        _cells.forEach(cell => cell.addEventListener("click", (e) => {
+            if (gameController.getCurrentTurnPlayer().name !== "Computer") {
+                executeMove(e.currentTarget, gameController.getCurrentTurnPlayer()); 
+            }
+        }));
         renderBoard();
     }
 
@@ -239,6 +250,15 @@ var cpuAI = (function() {
         }
     }
 
+    function _shuffleArray(array) {
+        for (var i = array.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+    }
+
     function _genChildrenFn(state) {
         let children = [];
         for (let idx = 0; idx < state.rep.length; idx++) {
@@ -252,6 +272,7 @@ var cpuAI = (function() {
                 })      
             }
         }
+        _shuffleArray(children)
         return children;
     }
 
@@ -274,9 +295,11 @@ var cpuAI = (function() {
         return AI.makeMove(rawState);
     }
     
-    function showTree(rawState) {
-        return AI.showTree(rawState);
+    function showTree(rawState, maxPlayer) {
+        return AI.showTree(rawState, maxPlayer);
     }
+
+
 
     return { makeMove, showTree }
 })();

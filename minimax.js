@@ -7,7 +7,8 @@ function minimaxAI(_stateFacFn, _genChildrenFn, _gameoverFn, _nextMoveFn) {
     function minimax(state, depth, alpha, beta, maximizingPlayer, debug = false) {
         let gameOverCheck = gameoverFn(state);
         if (typeof(gameOverCheck) === "number") {
-            if (debug) { console.log("|".repeat(depth) + `State: ${state.rep}, Eval: ${gameOverCheck}`); }
+            gameOverCheck /= depth;
+            if (debug) { console.log("|".repeat(depth) + `State: ${state.rep}, Eval: ${gameOverCheck}, Move made: ${state.requiredMove}`); }
             return { eval: gameOverCheck, optimalNextState: state };
         }
 
@@ -23,7 +24,7 @@ function minimaxAI(_stateFacFn, _genChildrenFn, _gameoverFn, _nextMoveFn) {
                 alpha = Math.max(alpha, evalState.eval);
                 if (beta <= alpha) { break; }
             }
-            if (debug) { console.log("|".repeat(depth) + `[O] State: ${state.rep}, Eval: ${maxEval}`); }
+            if (debug) { console.log("|".repeat(depth) + `[O] State: ${maxEvalChild.rep}, Eval: ${maxEval}, Move made: ${maxEvalChild.requiredMove}`); }
             return { eval: maxEval, optimalNextState: maxEvalChild };
         } else {
             let minEval = Infinity;
@@ -37,14 +38,14 @@ function minimaxAI(_stateFacFn, _genChildrenFn, _gameoverFn, _nextMoveFn) {
                 beta = Math.min(beta, evalState.eval);
                 if (beta <= alpha) { break; }
             }
-            if (debug) { console.log("|".repeat(depth) + `[X] State: ${state.rep}, Eval: ${minEval}`); }
+            if (debug) { console.log("|".repeat(depth) + `[X] State: ${minEvalChild.rep}, Eval: ${minEval}, Move made: ${minEvalChild.requiredMove}`); }
             return { eval: minEval, optimalNextState: minEvalChild };
         };
     }
 
-    function showTree(rawState) {
+    function showTree(rawState, maxPlayer) {
         let currState = stateFacFn(rawState);
-        minimax(currState, 0, -Infinity, Infinity, true, debug = true);
+        minimax(currState, 0, -Infinity, Infinity, maxPlayer, debug = true);
     }
 
     function makeMove(rawState) {
