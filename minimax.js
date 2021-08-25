@@ -51,7 +51,7 @@ function minimaxAI(_stateFacFn, _genChildrenFn, _gameoverFn, _nextMoveFn) {
     function makeMove(rawState) {
         let currState = stateFacFn(rawState);
         let evalState = minimax(currState, 0, -Infinity, Infinity, true);
-        return nextMoveFn(evalState.optimalNextState);
+        return nextMoveFn(evalState);
     }
 
     return { makeMove, showTree }

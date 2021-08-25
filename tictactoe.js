@@ -3,21 +3,45 @@ function playerFactory(name, symbol) {
     var name = name;
     var symbol = symbol;
     var isCPU = false;
+    var cpuMoveTimeout;
+
+    function _isOpponentWinning() {
+        let board = gameboard.getStateForAI();
+        for (const line of gameboard.winningIndeces) {
+            if (board[line[0]] + board[line[1]] + board[line[2]] === -2) {
+                return (board[line[0]] === 0) ? line[0] : (board[line[1]] === 0) ? line[1] : line[2]; 
+            }
+        }
+        return false;
+    }
 
     function makeCPUMove() {
         // Logic for CPU's turn
-        let optimalMove = cpuAI.makeMove(gameboard.getStateForAI());
-        let currState = gameboard.getStateForAI();
-        let possibleMoves = [];
-        for (let i = 0; i < currState.length; i++) {
-            if (currState[i] === 0) { possibleMoves.push(i); }
+        if (gameController.getCurrentTurnPlayer().name !== "Computer") { return; }
+        var move;
+
+        let winBlock = _isOpponentWinning();
+        if (typeof(winBlock) === "number") {
+            move = winBlock;
         }
-        let CPU_difficulty = (possibleMoves.length >= 8) ? .66 : (possibleMoves.length >= 6) ? .90 : 1;
-        let move = (Math.random() > CPU_difficulty) ? possibleMoves[Math.floor(Math.random()*possibleMoves.length)] : optimalMove;
-        setTimeout(() => {gameboard.executeMove(document.querySelector(`.cell[data-idx='${move}']`), this);}, 1000);
+        else {
+            let optimalMove = cpuAI.makeMove(gameboard.getStateForAI());
+            let currState = gameboard.getStateForAI();
+            let possibleMoves = [];
+            for (let i = 0; i < currState.length; i++) {
+                if (currState[i] === 0) { possibleMoves.push(i); }
+            }
+            let CPU_difficulty = (possibleMoves.length >= 8) ? .80 : (possibleMoves.length >= 6) ? .60 : 1;
+            move = (Math.random() > CPU_difficulty) ? possibleMoves[Math.floor(Math.random()*possibleMoves.length)] : optimalMove;
+        }
+        cpuMoveTimeout = setTimeout(() => {gameboard.executeMove(document.querySelector(`.cell[data-idx='${move}']`), this);}, 1000);
+    }
+
+    function stopMoveExecution() {
+        clearTimeout(cpuMoveTimeout);
     }
     
-    return { name, symbol, isCPU, makeCPUMove }
+    return { name, symbol, isCPU, stopMoveExecution, makeCPUMove }
 }
 
 // Gameboard module
@@ -231,7 +255,10 @@ var gameController = (function() {
         // Called when a reset button is called. 
         _gameWon = false;
         gameboard.resetBoard();
-        if (_currentTurnPlayer.isCPU) {_currentTurnPlayer.makeCPUMove();}
+        if (_currentTurnPlayer.isCPU) {
+            _currentTurnPlayer.stopMoveExecution();
+            _currentTurnPlayer.makeCPUMove();
+        }
         updateGame();
     }
 
@@ -287,8 +314,8 @@ var cpuAI = (function() {
         return (emptyCellCount === 0) ? 0 : false;
     }
 
-    function _nextMoveFn(optimalNextState) {
-        return optimalNextState.requiredMove;
+    function _nextMoveFn(evalState) {
+        return evalState.optimalNextState.requiredMove;
     }
 
     function makeMove(rawState) {
